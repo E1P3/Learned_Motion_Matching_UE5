@@ -1,0 +1,114 @@
+[
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Plugins\\FeatureExtraction\\Source\\FeatureExtraction\\FeatureExtraction.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\FeatureExtraction.67.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Plugins\\FeatureExtraction\\Source\\FeatureExtraction\\Private\\FeatureExtraction.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\FeatureExtraction.67.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Plugins\\FeatureExtraction\\Source\\FeatureExtraction\\Private\\FeatureExtractionCommands.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\FeatureExtraction.67.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Plugins\\FeatureExtraction\\Source\\FeatureExtraction\\Private\\FeatureExtractionStyle.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\FeatureExtraction.67.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Plugins\\FeatureExtraction\\Source\\FeatureExtraction\\Public\\FeatureExtraction.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\FeatureExtraction.67.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Plugins\\FeatureExtraction\\Source\\FeatureExtraction\\Public\\FeatureExtractionCommands.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\FeatureExtraction.67.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Plugins\\FeatureExtraction\\Source\\FeatureExtraction\\Public\\FeatureExtractionStyle.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\FeatureExtraction.67.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Source\\Testing\\Private\\AnimGraphNode_LMM.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\Testing.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Source\\Testing\\Private\\AnimNode_LMM.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\Testing.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Source\\Testing\\Public\\AnimGraphNode_LMM.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\Testing.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Source\\Testing\\Public\\AnimNode_LMM.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\Testing.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Source\\Testing\\Testing.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\Testing.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Source\\Testing\\Testing.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\Testing.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\Source\\Testing\\Testing.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.36.32532\\bin\\Hostx64\\x64\\cl.exe",
+			"@C:\\Users\\HOW TO SPOON\\Documents\\Unreal Projects\\Testing\\.vscode\\compileCommands_Testing\\Testing.1.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Source"
+	}
+]
