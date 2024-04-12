@@ -140,9 +140,7 @@ void FAnimNode_Learned_MM::Evaluate_AnyThread(FPoseContext& Output)
     FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
     TArray<float> updatedFeatures = Features.Update(FeaturesCurrent, ComponentTransform, Trajectory, deltaTime, forceSearch);
 
-    if(forceSearch && forceSearchTimer <= 0.0f){
-        forceSearchTimer = ForceSearchInterval;
-    } else if(forceSearchTimer > 0.0f){
+    if(forceSearchTimer > 0.0f){
         forceSearchTimer -= deltaTime;
         forceSearch = false;
     }
@@ -176,6 +174,7 @@ void FAnimNode_Learned_MM::Evaluate_AnyThread(FPoseContext& Output)
                 }
             }
             searchTimer = SearchInterval;
+            forceSearchTimer = ForceSearchInterval;
         } else {
             searchTimer -= deltaTime;
         }

@@ -293,25 +293,20 @@ struct FInertializer{
 	}
 
 	void Transition(FPose_LMM source, FPose_LMM destination){
-		// transition_src_position = source.BonePositions[0];
-		// transition_src_rotation = source.BoneRotations[0].GetNormalized();
-		// transition_dst_position = destination.BonePositions[0];
-		// transition_dst_rotation = destination.BoneRotations[0].GetNormalized();
+		transition_src_position = source.BonePositions[0];
+		transition_src_rotation = source.BoneRotations[0].GetNormalized();
+		transition_dst_position = destination.BonePositions[0];
+		transition_dst_rotation = destination.BoneRotations[0].GetNormalized();
 
-		// FVector world_space_dst_velocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(destination.BoneVelocities[0]));
-		// FVector world_space_dst_angular_velocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(destination.BoneAngularVelocities[0]));
+		FVector world_space_dst_velocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(destination.BoneVelocities[0]));
+		FVector world_space_dst_angular_velocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(destination.BoneAngularVelocities[0]));
 
-		// velocity_offset[0] = source.BoneVelocities[0] + velocity_offset[0] - world_space_dst_velocity;
-		// angular_velocity_offset[0] = (source.BoneAngularVelocities[0] + angular_velocity_offset[0]) - world_space_dst_angular_velocity;
+		InertializeTransition(position_offset[0], velocity_offset[0], source.BonePositions[0], source.BoneVelocities[0], destination.BonePositions[0], world_space_dst_velocity);
+		InertializeTransition(rotation_offset[0], angular_velocity_offset[0], source.BoneRotations[0], source.BoneAngularVelocities[0], destination.BoneRotations[0], world_space_dst_angular_velocity);
 
 		for(int i = 1; i < boneCount; i++){
-			position_offset[i] = (source.BonePositions[i] + position_offset[i]) - destination.BonePositions[i];
-			velocity_offset[i] = (source.BoneVelocities[i] + velocity_offset[i]) - destination.BoneVelocities[i];
-
-			rotation_offset[i] = rotation_offset[i] * source.BoneRotations[i] * destination.BoneRotations[i].Inverse();
-			rotation_offset[i] = rotation_offset[i].W < 0 ? rotation_offset[i] * -1 : rotation_offset[i];
-			rotation_offset[i].Normalize();
-			angular_velocity_offset[i] = (source.BoneAngularVelocities[i] + angular_velocity_offset[i]) - destination.BoneAngularVelocities[i];
+			InertializeTransition(position_offset[i], velocity_offset[i], source.BonePositions[i], source.BoneVelocities[i], destination.BonePositions[i], destination.BoneVelocities[i]);
+			InertializeTransition(rotation_offset[i], angular_velocity_offset[i], source.BoneRotations[i], source.BoneAngularVelocities[i], destination.BoneRotations[i], destination.BoneAngularVelocities[i]);
 		}
 
 	}
@@ -320,24 +315,67 @@ struct FInertializer{
 
 		OffsetUpdate(dt);
 
-		// FVector WorldSpacePosition = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BonePositions[0] - transition_src_position)) + transition_dst_position;
-		// FVector WorldSpaceVelocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BoneVelocities[0]));
-		// FQuat WorldSpaceRotation = FQuat(transition_dst_rotation * (transition_src_rotation.Inverse() * input.BoneRotations[0])).GetNormalized();
-		// FVector WorldSpaceAngularVelocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BoneAngularVelocities[0]));
+		FVector WorldSpacePosition = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BonePositions[0] - transition_src_position)) + transition_dst_position;
+		FVector WorldSpaceVelocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BoneVelocities[0]));
+		FQuat WorldSpaceRotation = FQuat(transition_dst_rotation * (transition_src_rotation.Inverse() * input.BoneRotations[0])).GetNormalized();
+		FVector WorldSpaceAngularVelocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BoneAngularVelocities[0]));
 
-		// output.BonePositions[0] = WorldSpacePosition + position_offset[0];
-		// output.BoneVelocities[0] = WorldSpaceVelocity + velocity_offset[0];
-		// output.BoneRotations[0] = WorldSpaceRotation * rotation_offset[0];
-		// output.BoneRotations[0].Normalize();
-		// output.BoneAngularVelocities[0] = WorldSpaceAngularVelocity + angular_velocity_offset[0];
+		InertializeUpdate(output.BonePositions[0], output.BoneVelocities[0], position_offset[0], velocity_offset[0], WorldSpacePosition, WorldSpaceVelocity);
+		InertializeUpdate(output.BoneRotations[0], output.BoneAngularVelocities[0], rotation_offset[0], angular_velocity_offset[0], WorldSpaceRotation, WorldSpaceAngularVelocity);
 
 		for(int i = 1 ; i < boneCount; i++){
-			output.BonePositions[i] = input.BonePositions[i] + position_offset[i];
-			output.BoneVelocities[i] = input.BoneVelocities[i] + velocity_offset[i];
-			output.BoneRotations[i] = input.BoneRotations[i] * rotation_offset[i];
-			output.BoneRotations[i].Normalize();
-			output.BoneAngularVelocities[i] = angular_velocity_offset[i] + rotation_offset[i].RotateVector(input.BoneAngularVelocities[i]); 
+			InertializeUpdate(output.BonePositions[i], output.BoneVelocities[i], position_offset[i], velocity_offset[i], input.BonePositions[i], input.BoneVelocities[i]);
+			InertializeUpdate(output.BoneRotations[i], output.BoneAngularVelocities[i], rotation_offset[i], angular_velocity_offset[i], input.BoneRotations[i], input.BoneAngularVelocities[i]);
 		}
+	}
+
+	void InertializeTransition(
+		FQuat& OffX, 
+		FVector& OffV, 
+		const FQuat& SrcX,
+		const FVector& SrcV,
+		const FQuat& DstX,
+		const FVector& DstV)
+	{
+		OffX = (OffX * SrcX * DstX.Inverse()).GetNormalized();
+		OffX = OffX.W < 0 ? OffX * -1 : OffX;
+		OffV = (OffV + SrcV) - DstV;
+	}
+
+	void InertializeTransition(
+		FVector& OffX, 
+		FVector& OffV, 
+		const FVector& SrcX,
+		const FVector& SrcV,
+		const FVector& DstX,
+		const FVector& DstV)
+	{
+		OffX = (SrcX + OffX) - DstX;
+		OffV = (SrcV + OffV) - DstV;
+	}
+
+	void InertializeUpdate(
+		FQuat& OutX, 
+		FVector& OutV,
+		FQuat& OffX, 
+		FVector& OffV,
+		const FQuat& InX, 
+		const FVector& InV)
+	{
+		OutX = OffX * InX;
+		OutV = OffV + OffX.RotateVector(InV);
+	}
+
+	static inline void InertializeUpdate(
+		FVector& OutX, 
+		FVector& OutV,
+		FVector& OffX, 
+		FVector& OffV,
+		const FVector& InX, 
+		const FVector& InV)
+	{
+		OutX = InX + OffX;
+		OutV = InV + OffV;
 	}
 
 	void OffsetUpdate(float dt){
@@ -363,7 +401,7 @@ struct FInertializer{
 	}
 
 	float GetLambda(){
-		return 2.0 * 0.69314718056f / halflife;
+		return 6.64 * 0.69314718056f / halflife;
 	}
 
 	FQuat QuatExp(const FVector& V, float Eps = 1e-8f)
@@ -467,67 +505,6 @@ struct TESTING_API FFeatures{
 		}
 	}
 
-    TArray<float> Get(FPoseContext& Output, FPoseSearchQueryTrajectory& Trajectory, const FBoneContainer& BoneContainer, float scale = 0.01f){
-        TArray<float> features;
-        FCSPose<FCompactPose> ComponentPose;
-        ComponentPose.InitPose(Output.Pose);
-        FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
-
-        FString boneInfo = "Features : \n";
-
-        for(FBoneReference& BoneReference : PositionBones){
-            const FCompactPoseBoneIndex BoneIndex = BoneReference.GetCompactPoseIndex(BoneContainer);
-            const FTransform BoneTransform = ComponentPose.GetComponentSpaceTransform(BoneIndex);
-            FVector BonePosition = BoneTransform.GetLocation();
-            features.Add((BonePosition.X * scale)*positionsScale);
-            features.Add((BonePosition.Y * scale)*positionsScale);
-            features.Add((BonePosition.Z * scale)*positionsScale);
-        }
-
-        for(int i = 0; i < VelocityBones.Num(); i++){
-            const FCompactPoseBoneIndex BoneIndex = VelocityBones[i].GetCompactPoseIndex(BoneContainer);
-            const FTransform BoneTransform = ComponentPose.GetComponentSpaceTransform(BoneIndex);
-            FVector BonePosition = BoneTransform.GetLocation();
-            FVector Velocity = FVector(0, 0, 0);
-            if(CachedBonePositions.Num() == VelocityBones.Num()){
-                Velocity = (BonePosition - CachedBonePositions[i]);
-            } 
-            features.Add((Velocity.X * scale)*velocitiesScale);
-            features.Add((Velocity.Y * scale)*velocitiesScale);
-            features.Add((Velocity.Z * scale)*velocitiesScale);
-            CachedBonePositions[i] = BonePosition;
-        }
-
-        features.Append(GetTrajectoryData(ComponentTransform, Trajectory));
-
-        for(int i = 0; i < features.Num(); i++){
-            if(i == 0){
-                boneInfo += "\nPosition Features : \n";
-            } else if(i == PositionBones.Num()*3){
-                boneInfo += "\nVelocity Features : \n";
-            } else if(i == PositionBones.Num()*3 + VelocityBones.Num()*3){
-                boneInfo += "\nTrajectory Features : \n";
-            }
-            boneInfo += FString::Printf(TEXT(" %f "), features[i]);
-        }
-        if(debug){
-            UE_LOG(LogTemp, Warning, TEXT("%s"), *boneInfo);
-        }
-
-        if(features.Num() > (PositionBones.Num() * 3 + VelocityBones.Num() * 3 + 12)){
-
-            if(debug){
-                UE_LOG(LogTemp, Warning, TEXT("Features are more than expected"));
-            }
-
-            features.SetNum(PositionBones.Num() * 3 + VelocityBones.Num() * 3 + 12);
-        }
-
-        Normalize(features);
-
-        return features;
-    }
-
 	TArray<float> Update(TArray<float> FeaturesCurrent, FTransform RootTransform, FPoseSearchQueryTrajectory Trajectory, float dt, bool& forceSearch){
 		TArray<float> updatedFeatures = FeaturesCurrent;
 
@@ -538,7 +515,7 @@ struct TESTING_API FFeatures{
 
 		float difference = FVector::Dist(currentTrajectory, previousTrajectory) / dt;
 
-		if(difference > 50){
+		if(difference > 5){
 			forceSearch = true;
 		}
 
