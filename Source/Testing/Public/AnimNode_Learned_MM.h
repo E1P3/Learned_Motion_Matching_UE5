@@ -84,61 +84,6 @@ struct FModelInstance{
 	}
 };
 
-struct FAnimData{
-    TArray<TArray<TArray<float>>> frames;
-    int currentFrame = 0;
-    float time = 0.0f;
-    float speed = 1.0f;
-
-    void step(){
-        time += speed;
-        if(time >= frames.Num()){
-            time = 0.0f;
-        }
-        currentFrame = FMath::FloorToInt(time);
-    }
-
-    void ReadAnimDataFromBinary(const FString& FilePath){
-        FString fullFilePath = FPaths::Combine(FPaths::ProjectDir(), FilePath);
-        TArray<uint8> FileData;
-        if (!FFileHelper::LoadFileToArray(FileData, *fullFilePath))
-        {
-            // Failed to load file
-            return;
-        }
-        int32 Offset = 0;
-        int32 numFrames = DecodeToFloat(FileData, Offset);
-        int32 numBones = DecodeToFloat(FileData, Offset);
-        for(int i = 0; i < numFrames; i++){
-            TArray<TArray<float>> frame;
-            for(int j = 0; j < numBones; j++){
-                TArray<float> bone;
-                for(int k = 0; k < 7; k++){
-                    bone.Add(DecodeToFloat(FileData, Offset));
-                }
-                frame.Add(bone);
-            }
-            frames.Add(frame);
-        }
-    }
-
-    float DecodeToFloat(TArray<uint8>& FileData, int32& Offset)
-	{
-		float Value;
-		FMemory::Memcpy(&Value, &FileData[Offset], sizeof(float));
-        Offset+=4;
-		return Value;
-	}
-
-	int32 DecodeToInt(TArray<uint8>& FileData, int32& Offset)
-	{
-		int32 Value;
-		FMemory::Memcpy(&Value, &FileData[Offset], sizeof(int32));
-        Offset+=4;
-		return Value;
-	}
-};
-
 struct FPose_LMM{
 	TArray<FVector> BonePositions;
 	TArray<FQuat> BoneRotations;
@@ -631,8 +576,6 @@ private:
 	// Search Parameters
 	float searchTimer = 0.0f;
 	float forceSearchTimer = 0.0f;
-
-	FAnimData animData;
 
 public:
     // FAnimNode_Base interface

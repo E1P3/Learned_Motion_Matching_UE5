@@ -87,10 +87,6 @@ void FAnimNode_Learned_MM::Initialize_AnyThread(const FAnimationInitializeContex
 
     PoseCurrent = FPose_LMM(BoneReferences.Num());
     Inertializer = FInertializer(BoneReferences.Num(), InertializerHalflife);
-
-    if(debug){
-        animData.ReadAnimDataFromBinary("/Import/LMM/animData.bin");
-    }
 }
 
 void FAnimNode_Learned_MM::CacheBones_AnyThread(const FAnimationCacheBonesContext& Context)
@@ -140,23 +136,6 @@ void FAnimNode_Learned_MM::Evaluate_AnyThread(FPoseContext& Output)
         forceSearchTimer -= deltaTime;
         forceSearch = false;
     }
-
-    // if(debug){
-    //     int currentFrame = animData.currentFrame;
-    //
-    //     for(int i = 0; i < BoneReferences.Num(); i++)
-    //     {
-    //         const FCompactPoseBoneIndex BoneIndex = BoneReferences[i].GetCompactPoseIndex(BoneContainer);
-    //         FTransform& OutTransform = SourcePose[BoneIndex];
-    //        
-    //         OutTransform.SetLocation(FVector(animData.frames[currentFrame][i][0] * 100.0f, animData.frames[currentFrame][i][1] * 100.0f, animData.frames[currentFrame][i][2] * 100.0f));
-    //         OutTransform.SetRotation(FQuat(animData.frames[currentFrame][i][3], animData.frames[currentFrame][i][4], animData.frames[currentFrame][i][5], animData.frames[currentFrame][i][6]));
-    //         animData.step();
-    //     }
-    //
-    //     return;
-    // }
-
 
     if(DecompressorInstance != nullptr || StepperInstance != nullptr || ProjectorInstance != nullptr){
 
