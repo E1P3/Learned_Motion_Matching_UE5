@@ -6,10 +6,6 @@
 #include "Animation/AnimStats.h"
 #include "Animation/AnimTrace.h"
 
-// FAnimNode_Learned_MM'
-// TODO Add Model Loading
-// Add Bone Loading
-
 FAnimNode_Learned_MM::FAnimNode_Learned_MM()
 {
 }
@@ -28,7 +24,7 @@ void FAnimNode_Learned_MM::Initialize_AnyThread(const FAnimationInitializeContex
     {
         if(Decompressor)
         {
-            DecompressorInstance = new FModelInstance(Decompressor, Runtime, "/Import/LMM/decompressor_std_mean.bin");
+            DecompressorInstance = new FModelInstance(Decompressor, Runtime);
         }
         else
         {
@@ -36,7 +32,7 @@ void FAnimNode_Learned_MM::Initialize_AnyThread(const FAnimationInitializeContex
         }
         if(Stepper)
         {
-            StepperInstance = new FModelInstance(Stepper, Runtime, "/Import/LMM/stepper_std_mean.bin");
+            StepperInstance = new FModelInstance(Stepper, Runtime);
         }
         else
         {
@@ -44,7 +40,7 @@ void FAnimNode_Learned_MM::Initialize_AnyThread(const FAnimationInitializeContex
         }
         if(Projector)
         {
-            ProjectorInstance = new FModelInstance(Projector, Runtime, "/Import/LMM/projector_std_mean.bin");
+            ProjectorInstance = new FModelInstance(Projector, Runtime);
         }
         else
         {

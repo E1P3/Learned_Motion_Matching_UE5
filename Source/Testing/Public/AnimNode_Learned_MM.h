@@ -14,17 +14,13 @@
 struct FModelInstance{
 	TUniquePtr<UE::NNE::IModelInstanceCPU> ModelInstance;
     TArray<float> InputData = TArray<float>();
-	TArray<float> InputStd = TArray<float>();
-	TArray<float> InputMean = TArray<float>();
     TArray<float> OutputData = TArray<float>();
-	TArray<float> OutputStd = TArray<float>();
-	TArray<float> OutputMean = TArray<float>();
     TArray<UE::NNE::FTensorBindingCPU> InputBindings;
     TArray<UE::NNE::FTensorBindingCPU> OutputBindings;
 	TArray<UE::NNE::FTensorShape> InputTensorShapes;
 	TArray<UE::NNE::FTensorShape> OutputTensorShapes;
 
-    FModelInstance(const TObjectPtr<UNNEModelData> ModelData, const TWeakInterfacePtr<INNERuntimeCPU> Runtime, const FString& FilePath){
+    FModelInstance(const TObjectPtr<UNNEModelData> ModelData, const TWeakInterfacePtr<INNERuntimeCPU> Runtime){
         TUniquePtr<UE::NNE::IModelCPU> Model = Runtime->CreateModel(ModelData);
 		if(Model.IsValid()){
 			ModelInstance = Model->CreateModelInstance();
@@ -49,8 +45,6 @@ struct FModelInstance{
 				OutputBindings.SetNumZeroed(1);
 				OutputBindings[0].Data = OutputData.GetData();
 				OutputBindings[0].SizeInBytes = OutputData.Num() * sizeof(float);
-
-				GetStdMean(FPaths::Combine(FPaths::ProjectDir(), FilePath));
 
 				UE_LOG(LogTemp, Warning, TEXT("Created Model with %d inputs and %d outputs"), InputTensorShapes[0].Volume(), OutputTensorShapes[0].Volume());
 			}
@@ -78,7 +72,7 @@ struct FModelInstance{
 
 	TArray<float> RunModel(TArray<float> _InputData){
 
-		SetInputData(Normalise(_InputData, InputStd, InputMean));
+		SetInputData(_InputData);
 		ClearOutputData();
 
 		if (ModelInstance->RunSync(InputBindings, OutputBindings) != 0)
@@ -86,86 +80,7 @@ struct FModelInstance{
 			UE_LOG(LogTemp, Error, TEXT("Failed to run the model"));
 		}
 
-		return Denormalise(OutputData, OutputStd, OutputMean);
-
-	}
-
-	TArray<float> Normalise(TArray<float> Data, TArray<float> Std, TArray<float> Mean){
-		TArray<float> NormalisedData;
-		NormalisedData.Init(0, Data.Num());
-		for(int i = 0; i < Data.Num(); i++){
-			NormalisedData[i] = (Data[i] - Mean[i]) / Std[i];
-		}
-		return NormalisedData;
-	}
-
-	TArray<float> Denormalise(TArray<float> Data, TArray<float> Std, TArray<float> Mean){
-		TArray<float> DenormalisedData;
-		DenormalisedData.Init(0, Data.Num());
-		for(int i = 0; i < Data.Num(); i++){
-			DenormalisedData[i] = Data[i] * Std[i] + Mean[i];
-		}
-		return DenormalisedData;
-	}
-
-	void GetStdMean(const FString& FilePath){
-		TArray<TArray<float>> ModelData = ReadFloatArraysFromFile(FilePath);
-		InputMean = ModelData[0];
-		InputStd = ModelData[1];
-		OutputMean = ModelData[2];
-		OutputStd = ModelData[3];
-		check(InputStd.Num() == InputTensorShapes[0].Volume());
-		check(InputMean.Num() == InputTensorShapes[0].Volume());
-		check(OutputStd.Num() == OutputTensorShapes[0].Volume());
-		check(OutputMean.Num() == OutputTensorShapes[0].Volume());
-	}
-
-	TArray<TArray<float>> ReadFloatArraysFromFile(const FString& FilePath)
-	{
-		TArray<uint8> FileData;
-		if (!FFileHelper::LoadFileToArray(FileData, *FilePath))
-		{
-			// Failed to load file
-			return TArray<TArray<float>>();
-		}
-
-		int32 NumElements = InputTensorShapes[0].Volume() * 2 + OutputTensorShapes[0].Volume() * 2 + 4;
-		int32 Offset = 0;
-
-		TArray<TArray<float>> FloatArrays;
-		while (Offset != NumElements * 4)
-		{
-			int32 Size = DecodeToInt(FileData, Offset);
-			Offset += 4;
-			TArray<float> Floats = GetArrayFromBinary(FileData, Offset, Size);
-			FloatArrays.Add(Floats);
-		}
-		return FloatArrays;
-	}
-
-	TArray<float> GetArrayFromBinary(TArray<uint8>& FileData, int32& Offset, int32 Size)
-	{
-		TArray<float> Floats;
-		for (int32 j = 0; j < Size; j++)
-		{
-			Floats.Add(DecodeToFloat(FileData, Offset));
-			Offset += 4;
-		}
-		return Floats;
-	}
-
-	float DecodeToFloat(TArray<uint8>& FileData, int32& Offset)
-	{
-		float Value;
-		FMemory::Memcpy(&Value, &FileData[Offset], sizeof(float));
-		return Value;
-	}
-
-	int32 DecodeToInt(TArray<uint8>& FileData, int32& Offset)
-	{
-		int32 Value;
-		FMemory::Memcpy(&Value, &FileData[Offset], sizeof(int32));
-		return Value;
+		return OutputData;
 	}
 };
 
