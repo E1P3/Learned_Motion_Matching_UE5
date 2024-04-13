@@ -87,6 +87,7 @@ void FAnimNode_Learned_MM::Initialize_AnyThread(const FAnimationInitializeContex
 
     PoseCurrent = FPose_LMM(BoneReferences.Num());
     Inertializer = FInertializer(BoneReferences.Num(), InertializerHalflife);
+    Inertializer.rootAdjustment = isRootAdjustment;
 }
 
 void FAnimNode_Learned_MM::CacheBones_AnyThread(const FAnimationCacheBonesContext& Context)

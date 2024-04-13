@@ -120,6 +120,7 @@ struct FInertializer{
 	FQuat transition_src_rotation;
 	FVector transition_dst_position;
 	FQuat transition_dst_rotation;
+	bool rootAdjustment = true;
 	float halflife = 0.1f;
 	float lambda;
 	float boneCount;
@@ -153,16 +154,23 @@ struct FInertializer{
 	}
 
 	void Transition(FPose_LMM source, FPose_LMM destination){
-		transition_src_position = source.BonePositions[0];
-		transition_src_rotation = source.BoneRotations[0].GetNormalized();
-		transition_dst_position = destination.BonePositions[0];
-		transition_dst_rotation = destination.BoneRotations[0].GetNormalized();
+		if(source.boneCount != destination.boneCount){
+			UE_LOG(LogTemp, Error, TEXT("Cannot perform the transition. Source and Destination bone counts do not match"));
+			return;
+		}
 
-		FVector world_space_dst_velocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(destination.BoneVelocities[0]));
-		FVector world_space_dst_angular_velocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(destination.BoneAngularVelocities[0]));
+		if(rootAdjustment){
+			transition_src_position = source.BonePositions[0];
+			transition_src_rotation = source.BoneRotations[0].GetNormalized();
+			transition_dst_position = destination.BonePositions[0];
+			transition_dst_rotation = destination.BoneRotations[0].GetNormalized();
 
-		InertializeTransition(position_offset[0], velocity_offset[0], source.BonePositions[0], source.BoneVelocities[0], destination.BonePositions[0], world_space_dst_velocity);
-		InertializeTransition(rotation_offset[0], angular_velocity_offset[0], source.BoneRotations[0], source.BoneAngularVelocities[0], destination.BoneRotations[0], world_space_dst_angular_velocity);
+			FVector world_space_dst_velocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(destination.BoneVelocities[0]));
+			FVector world_space_dst_angular_velocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(destination.BoneAngularVelocities[0]));
+
+			InertializeTransition(position_offset[0], velocity_offset[0], source.BonePositions[0], source.BoneVelocities[0], destination.BonePositions[0], world_space_dst_velocity);
+			InertializeTransition(rotation_offset[0], angular_velocity_offset[0], source.BoneRotations[0], source.BoneAngularVelocities[0], destination.BoneRotations[0], world_space_dst_angular_velocity);
+		}
 
 		for(int i = 1; i < boneCount; i++){
 			InertializeTransition(position_offset[i], velocity_offset[i], source.BonePositions[i], source.BoneVelocities[i], destination.BonePositions[i], destination.BoneVelocities[i]);
@@ -172,16 +180,22 @@ struct FInertializer{
 	}
 
 	void Update(FPose_LMM input, FPose_LMM& output, float dt){
+		if(input.boneCount != output.boneCount){
+			UE_LOG(LogTemp, Error, TEXT("Cannot perform update. Input and Output bone counts do not match"));
+			return;
+		}
 
 		OffsetUpdate(dt);
 
-		FVector WorldSpacePosition = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BonePositions[0] - transition_src_position)) + transition_dst_position;
-		FVector WorldSpaceVelocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BoneVelocities[0]));
-		FQuat WorldSpaceRotation = FQuat(transition_dst_rotation * (transition_src_rotation.Inverse() * input.BoneRotations[0])).GetNormalized();
-		FVector WorldSpaceAngularVelocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BoneAngularVelocities[0]));
+		if(rootAdjustment){
+			FVector WorldSpacePosition = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BonePositions[0] - transition_src_position)) + transition_dst_position;
+			FVector WorldSpaceVelocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BoneVelocities[0]));
+			FQuat WorldSpaceRotation = FQuat(transition_dst_rotation * (transition_src_rotation.Inverse() * input.BoneRotations[0])).GetNormalized();
+			FVector WorldSpaceAngularVelocity = transition_dst_rotation.RotateVector(transition_src_rotation.Inverse().RotateVector(input.BoneAngularVelocities[0]));
 
-		InertializeUpdate(output.BonePositions[0], output.BoneVelocities[0], position_offset[0], velocity_offset[0], WorldSpacePosition, WorldSpaceVelocity);
-		InertializeUpdate(output.BoneRotations[0], output.BoneAngularVelocities[0], rotation_offset[0], angular_velocity_offset[0], WorldSpaceRotation, WorldSpaceAngularVelocity);
+			InertializeUpdate(output.BonePositions[0], output.BoneVelocities[0], position_offset[0], velocity_offset[0], WorldSpacePosition, WorldSpaceVelocity);
+			InertializeUpdate(output.BoneRotations[0], output.BoneAngularVelocities[0], rotation_offset[0], angular_velocity_offset[0], WorldSpaceRotation, WorldSpaceAngularVelocity);
+		}	
 
 		for(int i = 1 ; i < boneCount; i++){
 			InertializeUpdate(output.BonePositions[i], output.BoneVelocities[i], position_offset[i], velocity_offset[i], input.BonePositions[i], input.BoneVelocities[i]);
@@ -317,18 +331,6 @@ struct TESTING_API FFeatures{
 
     UPROPERTY(EditAnywhere, Category = Settings)
     TArray<FBoneReference> VelocityBones;
-
-    UPROPERTY(EditAnywhere, Category = Settings)
-    float positionsScale = 1.0f;
-
-    UPROPERTY(EditAnywhere, Category = Settings)
-    float velocitiesScale = 1.0f;
-
-    UPROPERTY(EditAnywhere, Category = Settings)
-    float trajectoryPositionsScale = 1.0f;
-
-    UPROPERTY(EditAnywhere, Category = Settings)
-    float trajectoryDirectionsScale = 1.0f;
 
     UPROPERTY(EditAnywhere, Category = Settings)
     bool debug = false;
@@ -551,6 +553,9 @@ struct TESTING_API FAnimNode_Learned_MM : public FAnimNode_Base
 
 	UPROPERTY(EditAnywhere, Category = Settings)
 	bool debug = true;
+
+	UPROPERTY(EditAnywhere, Category = Settings)
+	bool isRootAdjustment = true;
 
 	UPROPERTY(EditAnywhere, Category = Settings)
 	bool isInertializing = true;
