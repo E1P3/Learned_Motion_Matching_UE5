@@ -342,6 +342,7 @@ struct TESTING_API FFeatures{
     TArray<float> feature_scale;
 	TArray<TArray<float>> featuresdb;
 	int dbIndex = 0;
+	bool isInitialized = false;
 
     FFeatures()
     {
@@ -457,8 +458,13 @@ struct TESTING_API FFeatures{
 
     void GetFeatureParameters(const FString& FilePath){
 		TArray<TArray<float>> ModelData = ReadFloatArraysFromFile(FPaths::Combine(FPaths::ProjectDir(), FilePath));
+		if(ModelData.Num() < 2){
+			UE_LOG(LogTemp, Error, TEXT("Failed to read feature parameters from file"));
+			return;
+		}
 		feature_offset = ModelData[0];
 		feature_scale = ModelData[1];
+		isInitialized = true;
 	}
 
 	TArray<TArray<float>> ReadFloatArraysFromFile(const FString& FilePath)
@@ -549,7 +555,7 @@ struct TESTING_API FAnimNode_Learned_MM : public FAnimNode_Base
 	float ForceSearchInterval = 0.1f;
 
 	UPROPERTY(EditAnywhere, Category = Settings)
-	float InertializerHalflife = 1.0f;
+	float InertializerDecayRate = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = Settings)
 	bool debug = true;

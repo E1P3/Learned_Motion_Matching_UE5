@@ -29,6 +29,7 @@ void FAnimNode_Learned_MM::Initialize_AnyThread(const FAnimationInitializeContex
         else
         {
             UE_LOG(LogTemp, Warning, TEXT("Decompressor is null"));
+            return;
         }
         if(Stepper)
         {
@@ -37,6 +38,7 @@ void FAnimNode_Learned_MM::Initialize_AnyThread(const FAnimationInitializeContex
         else
         {
             UE_LOG(LogTemp, Warning, TEXT("Stepper is null"));
+            return;
         }
         if(Projector)
         {
@@ -45,12 +47,20 @@ void FAnimNode_Learned_MM::Initialize_AnyThread(const FAnimationInitializeContex
         else
         {
             UE_LOG(LogTemp, Warning, TEXT("Projector is null"));
+            return;
         }
     } else {
         UE_LOG(LogTemp, Warning, TEXT("Runtime is null"));
+        return;
     }
 
-    FeaturesCurrent = Features.featuresdb[0];
+    if(Features.isInitialized){
+        FeaturesCurrent = Features.featuresdb[0];
+    } else {
+        UE_LOG(LogTemp, Warning, TEXT("Features are not initialized"));
+        return;
+    }
+    
     LatentCurrent.Init(0, StepperInstance->InputTensorShapes[0].Volume() - FeaturesCurrent.Num());
 
 
@@ -86,7 +96,7 @@ void FAnimNode_Learned_MM::Initialize_AnyThread(const FAnimationInitializeContex
     }
 
     PoseCurrent = FPose_LMM(BoneReferences.Num());
-    Inertializer = FInertializer(BoneReferences.Num(), InertializerHalflife);
+    Inertializer = FInertializer(BoneReferences.Num(), InertializerDecayRate);
     Inertializer.rootAdjustment = isRootAdjustment;
 }
 
@@ -120,6 +130,16 @@ void FAnimNode_Learned_MM::Evaluate_AnyThread(FPoseContext& Output)
 {
     DECLARE_SCOPE_HIERARCHICAL_COUNTER_ANIMNODE(Evaluate_AnyThread)
 
+    if(Features.isInitialized == false){
+        UE_LOG(LogTemp, Error, TEXT("Features are not initialized"));
+        return;
+    }
+    
+    if(DecompressorInstance == nullptr || StepperInstance == nullptr || ProjectorInstance == nullptr){
+        UE_LOG(LogTemp, Error, TEXT("Decompressor, Stepper or Projector is null"));
+        return;
+    }
+
     const FBoneContainer& BoneContainer = Output.AnimInstanceProxy->GetRequiredBones();
 
     Source.Evaluate(Output);
@@ -138,43 +158,39 @@ void FAnimNode_Learned_MM::Evaluate_AnyThread(FPoseContext& Output)
         forceSearch = false;
     }
 
-    if(DecompressorInstance != nullptr || StepperInstance != nullptr || ProjectorInstance != nullptr){
-
-        if(searchTimer <= 0.0f || forceSearch){
-            bool transition = false;
-            ProjectorEvaluate(updatedFeatures, transition);
-            if(transition){
-                if(isInertializing){
-                    FPose_LMM PoseTransition = DecompressorEvaluate(deltaTime);
-                    Inertializer.Transition(PoseCurrent, PoseTransition);
-                }
+    if(searchTimer <= 0.0f || forceSearch){
+        bool transition = false;
+        ProjectorEvaluate(updatedFeatures, transition);
+        if(transition){
+            if(isInertializing){
+                FPose_LMM PoseTransition = DecompressorEvaluate(deltaTime);
+                Inertializer.Transition(PoseCurrent, PoseTransition);
             }
-            searchTimer = SearchInterval;
-            forceSearchTimer = ForceSearchInterval;
-        } else {
-            searchTimer -= deltaTime;
         }
+        searchTimer = SearchInterval;
+        forceSearchTimer = ForceSearchInterval;
+    } else {
+        searchTimer -= deltaTime;
+    }
 
-        StepperEvaluate(deltaTime); 
+    StepperEvaluate(deltaTime); 
 
-        FPose_LMM InputPose = DecompressorEvaluate(deltaTime);
-        if(isInertializing){
-            Inertializer.Update(InputPose, PoseCurrent, deltaTime);
-        } else {
-            PoseCurrent = InputPose;
-        }
+    FPose_LMM InputPose = DecompressorEvaluate(deltaTime);
+    if(isInertializing){
+        Inertializer.Update(InputPose, PoseCurrent, deltaTime);
+    } else {
+        PoseCurrent = InputPose;
+    }
 
-        for(int i = 0; i < BoneReferences.Num(); i++)
-        {
-            const FCompactPoseBoneIndex BoneIndex = BoneReferences[i].GetCompactPoseIndex(BoneContainer);
-            FTransform& OutTransform = SourcePose[BoneIndex];
-            OutTransform.SetLocation((PoseCurrent.BonePositions[i] + PoseCurrent.BoneVelocities[i] * deltaTime)* 100.0f);
-            FQuat newRotation = PoseCurrent.BoneRotations[i] * Inertializer.QuatFromScaledAngleAxis(PoseCurrent.BoneAngularVelocities[i] * deltaTime);
-            newRotation.Normalize();
-            OutTransform.SetRotation(newRotation);
-        }
-    }   
-
+    for(int i = 0; i < BoneReferences.Num(); i++)
+    {
+        const FCompactPoseBoneIndex BoneIndex = BoneReferences[i].GetCompactPoseIndex(BoneContainer);
+        FTransform& OutTransform = SourcePose[BoneIndex];
+        OutTransform.SetLocation((PoseCurrent.BonePositions[i] + PoseCurrent.BoneVelocities[i] * deltaTime)* 100.0f);
+        FQuat newRotation = PoseCurrent.BoneRotations[i] * Inertializer.QuatFromScaledAngleAxis(PoseCurrent.BoneAngularVelocities[i] * deltaTime);
+        newRotation.Normalize();
+        OutTransform.SetRotation(newRotation);
+    }
 }
 
 void FAnimNode_Learned_MM::GatherDebugData(FNodeDebugData& DebugData)
